@@ -89,6 +89,7 @@ const uploadCartridges = (
 
 	const toUpload = cartridges.map(cartridge => {
 		let retryCounter = 0;
+		const retries = workspace.getConfiguration('extension.prophet').get<number>('upload.retries');
 		return webDav.uploadCartridge(join(cartRoot, cartridge), notify, { ignoreList: config.ignoreList })
 			.pipe(
 				retryWhen(function (errors) {
@@ -98,7 +99,7 @@ const uploadCartridges = (
 						tap(function (e) {
 							if (e instanceof WebDav.WebDavError && e.statusCode === 401) {
 								throw e;
-							} else if (retryCounter < 3) {
+							} else if (retryCounter < <number> retries) {
 								outputChannel.appendLine(`Error: ${e}`);
 								outputChannel.appendLine(`Trying to re-upload cartridge`);
 								retryCounter++;
